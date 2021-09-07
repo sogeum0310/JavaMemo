@@ -9,9 +9,14 @@ import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +42,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     TextView test;
     private RecyclerView recyclerView;
     MemoAdapter adapter;
+    private EditText added;
+    private Button addbt;
+    private LinearLayout addll;
+    InputMethodManager inputMethodManager;
 
     @SuppressLint("ResourceType")
     @Override
@@ -51,6 +60,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fab1 = (FloatingActionButton) findViewById(R.id.fab1);
         fab2 = (FloatingActionButton) findViewById(R.id.fab2);
         test = findViewById(R.id.test);
+        added = findViewById(R.id.added);
+        addbt = findViewById(R.id.addbtn);
+        addll = findViewById(R.id.addll);
+
 
         fab.setOnClickListener(this);
         fab1.setOnClickListener(this);
@@ -63,23 +76,61 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         db = helper.getWritableDatabase();
 //        helper.onCreate(db);
 
-
         long todayl = System.currentTimeMillis();
-        String con = "123123";
-        String insert = "INSERT INTO "+Memolist.tablename+" VALUES ("+ null +","+con+","+ todayl+",1, 0)";
+
+        //플로팅 버튼
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                anim();
-                db.execSQL(insert);
+                inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                added.requestFocus();
+
+//                anim();
+//                db.execSQL(insert);
             }
         });
-        String sql = "select " + Memolist.content +", "+Memolist.feel+", "+Memolist._ID +", "+Memolist.arlam +" from "+ Memolist.tablename;
+
+        added.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (added.hasFocus()){
+                    addll.setVisibility(View.VISIBLE);
+                    fab.setVisibility(View.GONE);
+                    inputMethodManager.showSoftInput(added, 0);
+                }
+            }
+        });
+
+        addll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                added.clearFocus();
+                addll.setVisibility(View.GONE);
+                fab.setVisibility(View.VISIBLE);
+                inputMethodManager.hideSoftInputFromWindow(added.getWindowToken(),0);
+            }
+        });
+
+
+        addbt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addll.setVisibility(View.GONE);
+                fab.setVisibility(View.VISIBLE);
+                String con = added.getText().toString();
+                if (added.length() != 0){
+                    db.execSQL("INSERT INTO "+Memolist.tablename+" VALUES ("+ null +", "+"'"+con+ "'"+" , "+ todayl+",1, 0)");
+                }
+                added.setText("");
+                added.clearFocus();
+                inputMethodManager.hideSoftInputFromWindow(added.getWindowToken(),0);
+            }
+        });
+
+        String sql = "select " + Memolist.content +", "+Memolist.feel+", "+"id, "+Memolist.arlam +" from "+ Memolist.tablename;
 //        Cursor c = db.query("memo", null,null,null,null,null,null,null);
         Cursor c = db.rawQuery(sql,null);
-        while(c.moveToNext()){
-            System.out.println("txt: "+ "22222222222222222222222"+c.getString(c.getColumnIndex(Memolist.content)));
-        }
+
 
         //리사이클러뷰 시작 =============================================================================
         recyclerView = findViewById(R.id.recyclerview);
