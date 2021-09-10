@@ -1,15 +1,24 @@
 package com.sogeum0310.javamemo;
 
+import static java.util.Calendar.SUNDAY;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
-import android.view.MotionEvent;
+import android.os.Debug;
+import android.provider.Settings;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -20,38 +29,49 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amitshekhar.DebugDB;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.CalendarMode;
+import com.prolificinteractive.materialcalendarview.DayViewDecorator;
+import com.prolificinteractive.materialcalendarview.DayViewFacade;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 import com.sogeum0310.javamemo.MemoData.*;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    MaterialCalendarView materialCalendarView;
+    private MaterialCalendarView materialCalendarView;
     private Animation fab_open, fab_close;
     private Boolean isFabOpen = false;
     private FloatingActionButton fab, fab1, fab2;
-    DateFormat format = new SimpleDateFormat("YYYY-MM-dd");
-    TextView test;
+    private DateFormat format = new SimpleDateFormat("YYYY-M-dd");
+    private TextView test;
     private RecyclerView recyclerView;
-    MemoAdapter adapter;
+    private MemoAdapter adapter;
     private EditText added;
     private Button addbt;
     private LinearLayout addll;
-    InputMethodManager inputMethodManager;
+    private InputMethodManager inputMethodManager;
+    private ArrayList<MemoArray> list = new ArrayList<MemoArray>();
+    private String selday, selday2, today, today2;
+    private Calendar calendar = Calendar.getInstance();
+    private Cursor c;
 
     @SuppressLint("ResourceType")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        DebugDB.getAddressLog();
 
         fab_open = AnimationUtils.loadAnimation(getApplicationContext(), R.layout.fab_open);
         fab_close = AnimationUtils.loadAnimation(getApplicationContext(), R.layout.fab_close);
@@ -63,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         added = findViewById(R.id.added);
         addbt = findViewById(R.id.addbtn);
         addll = findViewById(R.id.addll);
+        materialCalendarView = findViewById(R.id.calendarView);
 
 
         fab.setOnClickListener(this);
@@ -76,7 +97,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         db = helper.getWritableDatabase();
 //        helper.onCreate(db);
 
-        long todayl = System.currentTimeMillis();
+//        calendar.add(Calendar.MONTH,+1);
+        today = format.format(calendar.getTime());
+        selday = today;
+        test.setText(today);
+
+
+        String sql2 = "select " + Memolist.content +", "+Memolist.feel+", "+Memolist.arlam +" , "+ Memolist.date + ", id from "+ Memolist.tablename +"order by id";
+//                +" where "+Memolist.date +" = '" + today+"'";
+
+        materialCalendarView.setOnDateChangedListener(new OnDateSelectedListener() {
+            @Override
+            public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
+                test.setText(date.getYear()+"-"+(date.getMonth()+1)+"-"+date.getDay());
+                selday = date.getYear()+"-"+(date.getMonth()+1)+"-"+date.getDay();
+                selday2 = date.getYear()+"-"+(date.getMonth()+1)+"-"+(date.getDay()+1);
+                String sql2 = "select " + Memolist.content +", "+Memolist.feel+", "+Memolist.arlam +" , "+ Memolist.date + ", id from "+ Memolist.tablename
+                        +" where "+Memolist.date +" = '" + selday+"'";
+                list.clear();
+               select(sql2);
+               adapter.notifyDataSetChanged();
+            }
+        });
+        materialCalendarView.setSelectedDate(CalendarDay.today());
+
+
+        //리사이클러뷰 시작 =============================================================================
+        recyclerView = findViewById(R.id.recyclerview);
+        adapter = new MemoAdapter(this, list);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setAdapter(adapter);
 
         //플로팅 버튼
         fab.setOnClickListener(new View.OnClickListener() {
@@ -84,12 +134,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(View view) {
                 inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
                 added.requestFocus();
+                materialCalendarView.state().edit().setCalendarDisplayMode(CalendarMode.WEEKS).commit();
 
 //                anim();
 //                db.execSQL(insert);
             }
         });
 
+        //메모 클릭 이벤트
+        adapter.setOnItemClickListener(new MemoAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(View v, int position) {
+                int id = list.get(position).getId();
+
+                System.out.println(id);
+
+                Intent intent = new Intent(MainActivity.this, MemodetailActivity.class);
+                intent.putExtra("id",id+"");
+                startActivity(intent);
+            }
+        });
+
+
+        //플로팅 버튼
         added.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
@@ -97,10 +164,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     addll.setVisibility(View.VISIBLE);
                     fab.setVisibility(View.GONE);
                     inputMethodManager.showSoftInput(added, 0);
+                    added.clearFocus();
                 }
             }
         });
 
+        //메모중 다른곳클릭
         addll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -108,10 +177,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 addll.setVisibility(View.GONE);
                 fab.setVisibility(View.VISIBLE);
                 inputMethodManager.hideSoftInputFromWindow(added.getWindowToken(),0);
+                materialCalendarView.state().edit().setCalendarDisplayMode(CalendarMode.MONTHS).commit();
             }
         });
 
-
+        //메모 작성후 버튼
         addbt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -119,43 +189,111 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 fab.setVisibility(View.VISIBLE);
                 String con = added.getText().toString();
                 if (added.length() != 0){
-                    db.execSQL("INSERT INTO "+Memolist.tablename+" VALUES ("+ null +", "+"'"+con+ "'"+" , "+ todayl+",1, 0)");
+
+                    String insert = "INSERT INTO "+Memolist.tablename+" VALUES ("+ null +", "+"'"+con+ "'"+" , '"+test.getText().toString() +"', 1, 0)";
+                    c =db.rawQuery(insert, null);
+                    c.moveToLast();
+                    System.out.println("222222222222222222222222222222222222222222222222222222" +insert);
+                    String sql = "select " + Memolist.content +", "+Memolist.feel+", "+Memolist.arlam +" , "+ Memolist.date + ", id from "+ Memolist.tablename;
+//                            +" order by date desc limit 1";
+                    c= db.rawQuery(sql,null);
+                    c.moveToLast();
+                    System.out.println(sql);
+                    list.add(new MemoArray(c.getString(0), c.getInt(1), c.getString(2), c.getInt(3), c.getInt(4)));
+                    adapter.notifyDataSetChanged();
                 }
                 added.setText("");
                 added.clearFocus();
                 inputMethodManager.hideSoftInputFromWindow(added.getWindowToken(),0);
+                materialCalendarView.state().edit().setCalendarDisplayMode(CalendarMode.MONTHS).commit();
             }
         });
 
-        String sql = "select " + Memolist.content +", "+Memolist.feel+", "+"id, "+Memolist.arlam +" from "+ Memolist.tablename;
-//        Cursor c = db.query("memo", null,null,null,null,null,null,null);
-        Cursor c = db.rawQuery(sql,null);
 
 
-        //리사이클러뷰 시작 =============================================================================
-        recyclerView = findViewById(R.id.recyclerview);
-        ArrayList<MemoData> list = new ArrayList<>();
-        adapter = new MemoAdapter(this, c);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
-
-        //달력 시작=====================================================================================
-
-        materialCalendarView = findViewById(R.id.calendarView);
-        materialCalendarView.setOnDateChangedListener(new OnDateSelectedListener() {
-            @Override
-            public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
-                test.setText(date.getYear()+"-"+date.getMonth()+"-"+date.getDay());
-            }
-        });
+        //달력=====================================================================================
 
         materialCalendarView.state().edit()
-                .setFirstDayOfWeek(Calendar.SUNDAY)
+                .setFirstDayOfWeek(SUNDAY)
                 .setMinimumDate(CalendarDay.from(2018,0,1))
                 .setMaximumDate(CalendarDay.from(2040,11,31))
                 .setCalendarDisplayMode(CalendarMode.MONTHS)
                 .commit();
-        materialCalendarView.setSelectedDate(CalendarDay.today());
+        materialCalendarView.addDecorators(
+//                new sundayDeco(),
+                new todayDeco()
+        );
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        list.clear();
+        String sql = "select " + Memolist.content +", "+Memolist.feel+", "+Memolist.arlam +" , "+ Memolist.date + ", id from "+ Memolist.tablename
+                +" where "+Memolist.date +" = '" + selday+"'" ;
+        select(sql);
+        adapter.notifyDataSetChanged();
+
+    }
+
+    static class sundayDeco implements DayViewDecorator {
+        private final Calendar calendar = Calendar.getInstance();
+
+        @Override
+        public boolean shouldDecorate(CalendarDay day) {
+            day.copyTo(calendar);
+            int weekday = calendar.get(Calendar.DAY_OF_WEEK);
+            return weekday == SUNDAY;
+        }
+
+        @Override
+        public void decorate(DayViewFacade view) {
+            view .addSpan(new ForegroundColorSpan(Color.RED));
+        }
+    }
+
+    private void select(String sql){
+        DatabaseHelper helper;
+        SQLiteDatabase db;
+        helper = new DatabaseHelper(this);
+        db = helper.getWritableDatabase();
+        c = db.rawQuery(sql, null);
+        if (c.moveToFirst()){
+            do {
+                MemoArray memoArray = new MemoArray();
+
+                memoArray.setContent(c.getString(0));
+                memoArray.setFeel(c.getInt(1));
+                memoArray.setDate(c.getString(2));
+                memoArray.setArlam(c.getInt(3));
+                memoArray.setId(c.getInt(4));
+                list.add(memoArray);
+            } while (c.moveToNext());
+        }
+    }
+
+    class todayDeco implements DayViewDecorator{
+        private CalendarDay date;
+
+        public todayDeco() {
+            date = CalendarDay.today();
+        }
+
+        @Override
+        public boolean shouldDecorate(CalendarDay day) {
+            return day.equals(date);
+        }
+
+        @Override
+        public void decorate(DayViewFacade view) {
+            view.addSpan(new StyleSpan(Typeface.BOLD));
+            view.addSpan(new RelativeSizeSpan(1.4f));
+            view.addSpan(new ForegroundColorSpan(Color.RED));
+        }
+
+        public void setDate(Date date) {
+            this.date = CalendarDay.from(date);
+        }
     }
 
     @Override

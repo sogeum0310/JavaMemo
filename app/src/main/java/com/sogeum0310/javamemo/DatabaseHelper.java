@@ -21,8 +21,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE " + Memolist.tablename + "(ID INTEGER PRIMARY KEY AUTOINCREMENT,"+ Memolist.content +" TEXT , " +
-                Memolist.date + " int , " +
-                Memolist.feel+" INT, " +
+                Memolist.date + " date , " +
+                Memolist.feel+" int, " +
                 Memolist.arlam + " int);");
 
     }

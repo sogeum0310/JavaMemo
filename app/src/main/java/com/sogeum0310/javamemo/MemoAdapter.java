@@ -1,7 +1,6 @@
 package com.sogeum0310.javamemo;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,38 +10,58 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
+
 public class MemoAdapter extends RecyclerView.Adapter<MemoAdapter.Holder> {
-    private Cursor cursor;
+    ArrayList<MemoArray> list;
     private Context context;
 
-    public MemoAdapter(Context context, Cursor cursor){
+    public MemoAdapter(Context context, ArrayList<MemoArray> list) {
         this.context = context;
-        this.cursor = cursor;
+        this.list = list;
     }
+
+    public interface OnItemClickListener {
+        void onItemClick(View v, int position);
+    }
+
+    private OnItemClickListener mListener = null;
+
+    // OnItemClickListener 리스너 객체 참조를 어댑터에 전달하는 메서드
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.mListener = listener;
+    }
+
+
     @NonNull
     @Override
     public MemoAdapter.Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_memo, parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_memo, parent, false);
         Holder holder = new Holder(view);
         return holder;
     }
 
     @Override
     public void onBindViewHolder(@NonNull MemoAdapter.Holder holder, int position) {
-        if(!cursor.moveToPosition(position))
-            return;
-        String content = cursor.getString(cursor.getColumnIndex(MemoData.Memolist.content));
-        String feel = cursor.getString(cursor.getColumnIndex(MemoData.Memolist.feel));
+        String content = list.get(position).content;
+        int feel = list.get(position).feel;
 
-        System.out.println(content);
         holder.content.setText(content);
+        if (feel == 1) {
+
+        } else if (feel == 2) {
+
+        } else {
+
+        }
 
     }
 
     @Override
     public int getItemCount() {
-        return cursor.getCount();
+        return (null != list ? list.size() : 0);
     }
+
 
     public class Holder extends RecyclerView.ViewHolder {
         TextView content;
@@ -52,6 +71,18 @@ public class MemoAdapter extends RecyclerView.Adapter<MemoAdapter.Holder> {
             super(itemView);
             this.content = (TextView) itemView.findViewById(R.id.content);
             this.feel = (ImageView) itemView.findViewById(R.id.feel);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int pos = getAdapterPosition();
+                    if (pos != RecyclerView.NO_POSITION) {
+                        // 리스너 객체의 메서드 호출.
+                        if (mListener != null) {
+                            mListener.onItemClick(view, pos);
+                        }
+                    }
+                }
+            });
         }
     }
 }
