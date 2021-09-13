@@ -83,21 +83,28 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:orientation="vertical">
-        <TextView
-            android:id="@+id/nogo"
+
+        <RadioGroup
+            android:id="@+id/radio"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="미진행"/>
-        <TextView
-            android:id="@+id/go"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="진행중"/>
-        <TextView
-            android:id="@+id/compl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="완료"/>
+            android:layout_height="wrap_content">
+            <RadioButton
+                android:id="@+id/go"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="진행중"/>
+            <RadioButton
+                android:id="@+id/nogo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="미진행"/>
+            <RadioButton
+                android:id="@+id/compl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="완료"/>
+
+        </RadioGroup>
         <TextView
             android:id="@+id/tomorrow"
             android:layout_width="match_parent"
@@ -106,7 +113,8 @@
         <Button
             android:id="@+id/del"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:text="삭제"/>
 
     </LinearLayout>
 </LinearLayout>
