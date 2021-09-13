@@ -235,8 +235,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setMaximumDate(CalendarDay.from(2040, 11, 31))
                 .setCalendarDisplayMode(CalendarMode.MONTHS)
                 .commit();
-
-        materialCalendarView.addDecorator(new todayDeco());
+        materialCalendarView.removeDecorators();
     }
 
     @Override
@@ -247,6 +246,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         helper = new DatabaseHelper(this);
         db = helper.getWritableDatabase();
 
+        collection.clear();
         String datesql = "Select distinct date from " + Memolist.tablename;
         Cursor cursor = db.rawQuery(datesql, null);
         CalendarDay calendarDay = null;
@@ -276,39 +276,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 + " where " + Memolist.date + " = '" + selday + "'";
         select(sql);
 
-        if (collection != null) {
-            try {
-                ddd = format.parse(selday);
-                CalendarDay calendarDay = CalendarDay.from(ddd);
-                collection.remove(calendarDay);
-                materialCalendarView.removeDecorators();
-                materialCalendarView.addDecorators(new todayDeco(),
-                        new EventDeco(Color.parseColor("#000000"), collection));
-
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        }
-
+        materialCalendarView.removeDecorators();
+        materialCalendarView.addDecorators(new todayDeco(),
+                new EventDeco(Color.parseColor("#000000"), collection));
 
         adapter.notifyDataSetChanged();
 
-    }
-
-    static class sundayDeco implements DayViewDecorator {
-        private final Calendar calendar = Calendar.getInstance();
-
-        @Override
-        public boolean shouldDecorate(CalendarDay day) {
-            day.copyTo(calendar);
-            int weekday = calendar.get(Calendar.DAY_OF_WEEK);
-            return weekday == SUNDAY;
-        }
-
-        @Override
-        public void decorate(DayViewFacade view) {
-            view.addSpan(new ForegroundColorSpan(Color.RED));
-        }
     }
 
     public class EventDeco implements DayViewDecorator {
@@ -346,8 +319,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void decorate(DayViewFacade view) {
-            view.addSpan(new StyleSpan(Typeface.BOLD));
-            view.addSpan(new RelativeSizeSpan(1.4f));
+//            view.addSpan(new StyleSpan(Typeface.BOLD));
+//            view.addSpan(new RelativeSizeSpan(1.4f));
             view.addSpan(new ForegroundColorSpan(Color.RED));
         }
 
@@ -356,25 +329,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public class RemoveDecorator implements DayViewDecorator {
-        private final HashSet<CalendarDay> dates;
-
-        public RemoveDecorator(Collection<CalendarDay> dates) {
-            this.dates = new HashSet<>(dates);
-        }
-
-        @Override
-        public boolean shouldDecorate(CalendarDay day) {
-            return dates.contains(day);
-            // also tried with just
-            // return false;
-        }
-
-        @Override
-        public void decorate(DayViewFacade view) {
-            // TODO: what to do?
-        }
-    }
 
     private void select(String sql) {
         DatabaseHelper helper;
