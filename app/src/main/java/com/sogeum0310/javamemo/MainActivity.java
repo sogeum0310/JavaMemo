@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Cursor c;
     private Date ddd;
     Collection<CalendarDay> collection = new ArrayList<>();
+    private long backBtnTime = 0;
 
 
     @SuppressLint("ResourceType")
@@ -95,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fab.setOnClickListener(this);
         fab1.setOnClickListener(this);
         fab2.setOnClickListener(this);
+
 
         //db가져오기===================================================================================
         DatabaseHelper helper;
@@ -384,6 +386,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             fab2.setClickable(true);
             isFabOpen = true;
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        long curTime = System.currentTimeMillis();
+        long gapTime = curTime - backBtnTime;
+
+        if(0 <= gapTime && 2000 >= gapTime) {
+            super.onBackPressed();
+        }
+        else {
+            backBtnTime = curTime;
+            Toast.makeText(this, "한번 더 누르면 종료됩니다.",Toast.LENGTH_SHORT).show();
+        }
+
+
     }
 
 }

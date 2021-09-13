@@ -45,14 +45,14 @@ public class MemoAdapter extends RecyclerView.Adapter<MemoAdapter.Holder> {
     public void onBindViewHolder(@NonNull MemoAdapter.Holder holder, int position) {
         String content = list.get(position).content;
         int feel = list.get(position).feel;
-
+//⭕🔺️❌
         holder.content.setText(content);
         if (feel == 1) {
-            holder.feel.setText("△");
+            holder.feel.setText("▲");
         } else if (feel == 2) {
-            holder.feel.setText("Ｘ");
+            holder.feel.setText("❌");
         } else {
-            holder.feel.setText("Ｏ");
+            holder.feel.setText("⭕");
         }
 
     }
