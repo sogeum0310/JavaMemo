@@ -54,7 +54,7 @@ public class MemodetailActivity extends AppCompatActivity {
         complete = findViewById(R.id.compl);
         tomorrow = findViewById(R.id.tomorrow);
         edmemo = findViewById(R.id.edmemo);
-        arlamsw = findViewById(R.id.arlam);
+//        arlamsw = findViewById(R.id.arlam);
         del = findViewById(R.id.del);
         testid = findViewById(R.id.testid);
 
@@ -87,21 +87,23 @@ public class MemodetailActivity extends AppCompatActivity {
         }else {
             radio.check(R.id.compl);
         }
+
+        //알람
         arlam = list.get(0).getArlam();
         if(arlam == 1){
-            arlamsw.setChecked(true);
+//            arlamsw.setChecked(true);
         }
 
-        arlamsw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (arlamsw.isChecked()) {
-                    System.out.println("check");
-                } else {
-
-                }
-            }
-        });
+//        arlamsw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+//                if (arlamsw.isChecked()) {
+//                    System.out.println("check");
+//                } else {
+//
+//                }
+//            }
+//        });
 
         //기한 설정
         calendar = Calendar.getInstance();
@@ -132,8 +134,6 @@ public class MemodetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 db.execSQL(delete);
-
-
                 finish();
             }
         });
@@ -161,18 +161,17 @@ public class MemodetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 content = edmemo.getText().toString();
-                if (arlamsw.isChecked()) {
-                    arlam = 1;
-
-                } else {
-                    arlam = 0;
-                }
+//                if (arlamsw.isChecked()) {
+//                    arlam = 1;
+//
+//                } else {
+//                    arlam = 0;
+//                }
                 date = txdate.getText().toString();
 
                 String update = "UPDATE " + Memolist.tablename + " SET " + Memolist.content + " = '" + content + "', " + Memolist.date + " = '" + date
                         + "', " + Memolist.feel + " = '" + feel + "', " + Memolist.arlam + " = '" + arlam + "' WHERE ID = " + id;
                 db.execSQL(update);
-                System.out.println("11111111111111111111111111111111" + id + update);
                 finish();
             }
         });

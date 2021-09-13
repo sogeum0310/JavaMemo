@@ -48,11 +48,11 @@ public class MemoAdapter extends RecyclerView.Adapter<MemoAdapter.Holder> {
 
         holder.content.setText(content);
         if (feel == 1) {
-
+            holder.feel.setText("△");
         } else if (feel == 2) {
-
+            holder.feel.setText("Ｘ");
         } else {
-
+            holder.feel.setText("Ｏ");
         }
 
     }
@@ -65,12 +65,12 @@ public class MemoAdapter extends RecyclerView.Adapter<MemoAdapter.Holder> {
 
     public class Holder extends RecyclerView.ViewHolder {
         TextView content;
-        ImageView feel;
+        TextView feel;
 
         public Holder(@NonNull View itemView) {
             super(itemView);
             this.content = (TextView) itemView.findViewById(R.id.content);
-            this.feel = (ImageView) itemView.findViewById(R.id.feel);
+            this.feel = (TextView) itemView.findViewById(R.id.feel);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
