@@ -137,14 +137,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setAdapter(adapter);
 
         //플로팅 버튼
-        fab.setOnClickListener(new View.OnClickListener() {
+        fab1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
                 added.requestFocus();
                 materialCalendarView.state().edit().setCalendarDisplayMode(CalendarMode.WEEKS).commit();
 
-//                anim();
+                anim();
 //                db.execSQL(insert);
             }
         });
@@ -356,17 +356,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         int id = view.getId();
         switch (id) {
-//            case R.id.fabMain:
-//                anim();
+            case R.id.fabMain:
+                anim();
 //                Toast.makeText(this, "Floating Action Button", Toast.LENGTH_SHORT).show();
-//                break;
-            case R.id.fab1:
-                anim();
-                Toast.makeText(this, "Button1", Toast.LENGTH_SHORT).show();
                 break;
+//            case R.id.fab1:
+//                anim();
+//                Toast.makeText(this, "Button1", Toast.LENGTH_SHORT).show();
+//                break;
             case R.id.fab2:
+                Intent intent = new Intent(MainActivity.this,SettingActivity.class);
+                startActivity(intent);
                 anim();
-                Toast.makeText(this, "Button2", Toast.LENGTH_SHORT).show();
+
+//                Toast.makeText(this, "Button2", Toast.LENGTH_SHORT).show();
                 break;
         }
     }
