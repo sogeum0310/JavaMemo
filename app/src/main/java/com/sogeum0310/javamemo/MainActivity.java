@@ -136,19 +136,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        //플로팅 버튼
-        fab1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-                added.requestFocus();
-                materialCalendarView.state().edit().setCalendarDisplayMode(CalendarMode.WEEKS).commit();
-
-                anim();
-//                db.execSQL(insert);
-            }
-        });
-
         //메모 클릭 이벤트
         adapter.setOnItemClickListener(new MemoAdapter.OnItemClickListener() {
             @Override
@@ -162,9 +149,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(intent);
             }
         });
+//플로팅 버튼
+        fab1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                added.requestFocus();
+                materialCalendarView.state().edit().setCalendarDisplayMode(CalendarMode.WEEKS).commit();
 
+                anim();
+//                db.execSQL(insert);
+            }
+        });
 
-        //플로팅 버튼
+        //포커스 변경확인
         added.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
@@ -172,8 +170,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     addll.setVisibility(View.VISIBLE);
                     fab.setVisibility(View.GONE);
                     inputMethodManager.showSoftInput(added, 0);
-                    added.clearFocus();
+
+                }else {
+                    addll.setVisibility(View.GONE);
+                    fab.setVisibility(View.VISIBLE);
+                    added.setText("");
+                    inputMethodManager.hideSoftInputFromWindow(added.getWindowToken(), 0);
+                    materialCalendarView.state().edit().setCalendarDisplayMode(CalendarMode.MONTHS).commit();
                 }
+
+
             }
         });
 
@@ -182,10 +188,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(View view) {
                 added.clearFocus();
-                addll.setVisibility(View.GONE);
-                fab.setVisibility(View.VISIBLE);
-                inputMethodManager.hideSoftInputFromWindow(added.getWindowToken(), 0);
-                materialCalendarView.state().edit().setCalendarDisplayMode(CalendarMode.MONTHS).commit();
             }
         });
 
@@ -193,20 +195,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         addbt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                addll.setVisibility(View.GONE);
-                fab.setVisibility(View.VISIBLE);
+
                 String con = added.getText().toString();
                 if (added.length() != 0) {
 
                     String insert = "INSERT INTO " + Memolist.tablename + " VALUES (" + null + ", " + "'" + con + "'" + " , '" + test.getText().toString() + "', 1, 0)";
                     c = db.rawQuery(insert, null);
                     c.moveToLast();
-                    System.out.println("222222222222222222222222222222222222222222222222222222" + insert);
                     String sql = "select " + Memolist.content + ", " + Memolist.feel + ", " + Memolist.arlam + " , " + Memolist.date + ", id from " + Memolist.tablename;
 //                            +" order by date desc limit 1";
                     c = db.rawQuery(sql, null);
                     c.moveToLast();
-                    System.out.println(sql);
                     list.add(new MemoArray(c.getString(0), c.getInt(1), c.getString(2), c.getInt(3), c.getInt(4)));
 
                     try {
@@ -218,13 +217,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     CalendarDay calendarDay = CalendarDay.from(ddd);
                     collection.add(calendarDay);
                     materialCalendarView.addDecorator(new EventDeco(Color.parseColor("#000000"), collection));
+                    added.clearFocus();
                     adapter.notifyDataSetChanged();
 
                 }
-                added.setText("");
-                added.clearFocus();
-                inputMethodManager.hideSoftInputFromWindow(added.getWindowToken(), 0);
-                materialCalendarView.state().edit().setCalendarDisplayMode(CalendarMode.MONTHS).commit();
+
             }
         });
 
@@ -396,6 +393,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         long curTime = System.currentTimeMillis();
         long gapTime = curTime - backBtnTime;
 
+        if(added.requestFocus()){
+            added.clearFocus();
+        }else
         if(0 <= gapTime && 2000 >= gapTime) {
             super.onBackPressed();
         }
