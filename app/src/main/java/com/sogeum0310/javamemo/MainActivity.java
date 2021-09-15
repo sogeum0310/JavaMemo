@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.TimeZone;
 
 import com.sogeum0310.javamemo.MemoData.*;
 
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Animation fab_open, fab_close;
     private Boolean isFabOpen = false;
     private FloatingActionButton fab, fab1, fab2;
-    private DateFormat format = new SimpleDateFormat("yyyy-M-dd");
+    private final DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
     private TextView test;
     private RecyclerView recyclerView;
     private MemoAdapter adapter;
@@ -65,8 +66,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private LinearLayout addll;
     private InputMethodManager inputMethodManager;
     private ArrayList<MemoArray> list = new ArrayList<>();
-    private String selday, selday2, today;
-    private final Calendar calendar = Calendar.getInstance();
+    private String selday, today;
+    TimeZone tz = TimeZone.getTimeZone("Asia/Seoul");
+    private final Calendar calendar = Calendar.getInstance(tz);
     private Cursor c;
     private Date ddd;
     Collection<CalendarDay> collection = new ArrayList<>();
@@ -92,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         addll = findViewById(R.id.addll);
         materialCalendarView = findViewById(R.id.calendarView);
 
-
         fab.setOnClickListener(this);
         fab1.setOnClickListener(this);
         fab2.setOnClickListener(this);
@@ -104,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         helper = new DatabaseHelper(this);
         db = helper.getWritableDatabase();
 //        helper.onCreate(db);
+        //helper.getWritableDatabase();에 oncreate 포함
 
 //        calendar.add(Calendar.MONTH,+1);
         today = format.format(calendar.getTime());
@@ -117,9 +119,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         materialCalendarView.setOnDateChangedListener(new OnDateSelectedListener() {
             @Override
             public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
-
                 test.setText(date.getYear() + "-" + (date.getMonth() + 1) + "-" + date.getDay());
-                selday = date.getYear() + "-" + (date.getMonth() + 1) + "-" + date.getDay();
+                ddd= date.getDate();
+                selday = format.format(ddd);
                 String sql2 = "select " + Memolist.content + ", " + Memolist.feel + ", " + Memolist.arlam + " , " + Memolist.date + ", id from " + Memolist.tablename
                         + " where " + Memolist.date + " = '" + selday + "'";
                 list.clear();
@@ -199,14 +201,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String con = added.getText().toString();
                 if (added.length() != 0) {
 
-                    String insert = "INSERT INTO " + Memolist.tablename + " VALUES (" + null + ", " + "'" + con + "'" + " , '" + test.getText().toString() + "', 1, 0)";
+                    String insert = "INSERT INTO " + Memolist.tablename + " VALUES (" + null + ", " + "'" + con + "'" + " , '" + test.getText().toString() + "', 1, 0, "+ null +" )";
                     c = db.rawQuery(insert, null);
                     c.moveToLast();
-                    String sql = "select " + Memolist.content + ", " + Memolist.feel + ", " + Memolist.arlam + " , " + Memolist.date + ", id from " + Memolist.tablename;
-//                            +" order by date desc limit 1";
+                    String sql = "select " + Memolist.content + ", " + Memolist.feel + ", " + Memolist.arlam + " , " + Memolist.date + ", id, arlamtime from " + Memolist.tablename;
                     c = db.rawQuery(sql, null);
                     c.moveToLast();
-                    list.add(new MemoArray(c.getString(0), c.getInt(1), c.getString(2), c.getInt(3), c.getInt(4)));
+                    list.add(new MemoArray(c.getString(0), c.getInt(1), c.getString(2), c.getInt(3), c.getInt(4),c.getString(5)));
 
                     try {
                         ddd = format.parse(selday);
@@ -226,8 +227,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
 
-        //달력=====================================================================================
-
+        //달력초기 세팅
         materialCalendarView.state().edit()
                 .setFirstDayOfWeek(SUNDAY)
                 .setMinimumDate(CalendarDay.from(2018, 0, 1))

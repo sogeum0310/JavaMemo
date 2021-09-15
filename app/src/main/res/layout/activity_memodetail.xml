@@ -63,7 +63,7 @@
             android:text="2222" />
     </LinearLayout>
 
-    <!--<LinearLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -82,8 +82,14 @@
             android:id="@+id/arlam"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+    </LinearLayout>
 
-    </LinearLayout>-->
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:text="1111"/>
 
     <LinearLayout
         android:layout_width="match_parent"

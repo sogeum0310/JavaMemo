@@ -23,7 +23,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE " + Memolist.tablename + "(ID INTEGER PRIMARY KEY AUTOINCREMENT,"+ Memolist.content +" TEXT , " +
                 Memolist.date + " date , " +
                 Memolist.feel+" int, " +
-                Memolist.arlam + " int);");
+                Memolist.arlam + " int," +
+                Memolist.arlamtime + " date);");
 
     }
 

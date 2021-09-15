@@ -69,8 +69,8 @@ public class MemoAdapter extends RecyclerView.Adapter<MemoAdapter.Holder> {
 
         public Holder(@NonNull View itemView) {
             super(itemView);
-            this.content = (TextView) itemView.findViewById(R.id.content);
-            this.feel = (TextView) itemView.findViewById(R.id.feel);
+            this.content = itemView.findViewById(R.id.content);
+            this.feel = itemView.findViewById(R.id.feel);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {

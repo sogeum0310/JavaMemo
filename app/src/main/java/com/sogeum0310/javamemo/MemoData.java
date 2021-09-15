@@ -9,6 +9,7 @@ public class MemoData {
         public static final String date = "date";
         public static final String feel = "feel";
         public static final String arlam = "arlam";
+        public static final String arlamtime = "arlamtime";
     }
 
 }

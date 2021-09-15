@@ -6,13 +6,15 @@ public class MemoArray {
     public String date;
     public int arlam;
     public int id;
+    public String arlamtime;
 
-    public MemoArray(String content, int feel, String date, int arlam, int id) {
+    public MemoArray(String content, int feel, String date, int arlam, int id, String arlamtime) {
         this.content = content;
         this.feel = feel;
         this.date = date;
         this.arlam = arlam;
         this.id = id;
+        this.arlamtime = arlamtime;
     }
 
     public MemoArray() {
@@ -57,5 +59,13 @@ public class MemoArray {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getArlamtime() {
+        return arlamtime;
+    }
+
+    public void setArlamtime(String arlamtime) {
+        this.arlamtime = arlamtime;
     }
 }
