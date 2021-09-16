@@ -2,7 +2,9 @@ package com.sogeum0310.javamemo;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,6 +21,7 @@ import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.sogeum0310.javamemo.MemoData.*;
 
@@ -43,7 +46,9 @@ public class MemodetailActivity extends AppCompatActivity {
     Calendar calendar;
     ArrayList<MemoArray> list = new ArrayList<>();
     private final DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-    private final DateFormat timeformat = new SimpleDateFormat("yyyy-MM-dd hh-mm");
+    private final DateFormat timeformat = new SimpleDateFormat("yyyy-MM-dd a hh:mm");
+    TimeZone tz = TimeZone.getTimeZone("Asia/Seoul");
+    Calendar c = Calendar.getInstance(tz);
 
 
     @Override
@@ -108,95 +113,16 @@ public class MemodetailActivity extends AppCompatActivity {
         arlamsw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                TimeZone tz = TimeZone.getTimeZone("Asia/Seoul");
-                Calendar c = Calendar.getInstance(tz);
-                int hour = c.get(Calendar.HOUR_OF_DAY);
-                int minute = c.get(Calendar.MINUTE);
-                try {
-                    Date d = format.parse(date);
-                    c.setTime(d);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-
-                if (arlamsw.isChecked()) {
-                    TimePickerDialog.OnTimeSetListener listener = new TimePickerDialog.OnTimeSetListener() {
-                        @Override
-                        public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                            if (timePicker.isShown()){
-                                c.set(Calendar.HOUR_OF_DAY, i);
-                                c.set(Calendar.MINUTE, i1);
-                                time.setText(i+" 시 "+ i1+" 분");
-                                Date d = c.getTime();
-                                stime = timeformat.format(d);
-                            }
-                        }
-                    };
-
-
-                    TimePickerDialog dialog = new TimePickerDialog(MemodetailActivity.this, android.R.style.Theme_Holo_Light_Dialog_NoActionBar, listener,hour,minute,false);
-
-                    dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            arlamsw.setChecked(true);
-                        }
-                    });
-                    dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            arlamsw.setChecked(false);
-                        }
-                    });
-
-
-                    dialog.setTitle("시간 설정");
-                    dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-                    dialog.setCancelable(false);
-                    dialog.show();
-                    time.setVisibility(View.VISIBLE);
-                } else {
-                    time.setText("");
-                    time.setVisibility(View.GONE);
-                }
+                c = Calendar.getInstance();
+                listner();
             }
         });
 
         time.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TimeZone tz = TimeZone.getTimeZone("Asia/Seoul");
-                Calendar c = Calendar.getInstance(tz);
-                int hour = c.get(Calendar.HOUR_OF_DAY);
-                int minute = c.get(Calendar.MINUTE);
-                try {
-                    Date d = format.parse(date);
-                    c.setTime(d);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-
-                if (arlamsw.isChecked()) {
-                    System.out.println("check");
-                    TimePickerDialog.OnTimeSetListener listener = new TimePickerDialog.OnTimeSetListener() {
-                        @Override
-                        public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                            if (timePicker.isShown()){
-                                c.set(Calendar.HOUR_OF_DAY, i);
-                                c.set(Calendar.MINUTE, i1);
-                                time.setText(i+" 시 "+ i1+" 분");
-                                Date d = c.getTime();
-                                stime = timeformat.format(d);
-                            }
-                        }
-                    };
-                    TimePickerDialog dialog = new TimePickerDialog(MemodetailActivity.this, android.R.style.Theme_Holo_Light_Dialog_NoActionBar, listener,hour,minute,false);
-                    dialog.setTitle("시간 설정");
-                    dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-                    dialog.show();
-                } else {
-
-                }
+                c = Calendar.getInstance();
+                listner();
             }
         });
 
@@ -205,7 +131,12 @@ public class MemodetailActivity extends AppCompatActivity {
         DatePickerDialog.OnDateSetListener dateSetListener = new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-                txdate.setText(String.format("%d-%d-%d", i, i1 + 1, i2));
+                calendar.set(Calendar.YEAR, i);
+                calendar.set(Calendar.MONTH, i1);
+                calendar.set(Calendar.DAY_OF_MONTH, i2);
+                Date d = calendar.getTime();
+                date = format.format(d);
+                txdate.setText(date);
 
             }
         };
@@ -273,7 +204,86 @@ public class MemodetailActivity extends AppCompatActivity {
             }
         });
 
+    }
 
+    private void alarmStart(int i, int i1){
+        this.c.set(Calendar.HOUR_OF_DAY, i);
+        this.c.set(Calendar.MINUTE, i1);
+        this.c.set(Calendar.SECOND, 0);
+
+        if (this.c.before(Calendar.getInstance())){
+            Toast.makeText(this,"알람시간은 현재시간보다 이전일수 없습니다.",Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Date d = c.getTime();
+        stime = timeformat.format(d);
+
+        time.setText(stime);
+        Toast.makeText(this,stime+"에 알람이 울립니다.",Toast.LENGTH_SHORT).show();
+
+        Intent intent = new Intent(this, AlarmReceiver.class);
+
+        PendingIntent pendingintent = PendingIntent.getBroadcast(this, Integer.parseInt(id), intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingintent);
+
+//        time.setText(i+" 시 "+ i1+" 분");
+
+    }
+
+    private void listner(){
+        int hour = c.get(Calendar.HOUR_OF_DAY);
+        int minute = c.get(Calendar.MINUTE);
+        Date d;
+
+        try {
+            d = format.parse(date);
+            c.setTime(d);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        if (arlamsw.isChecked()) {
+            TimePickerDialog.OnTimeSetListener listener = new TimePickerDialog.OnTimeSetListener() {
+                @Override
+                public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                    if (timePicker.isShown()){
+                        alarmStart(i,i1);
+                    }
+                }
+            };
+
+            TimePickerDialog dialog = new TimePickerDialog(MemodetailActivity.this,
+                    android.R.style.Theme_Holo_Light_Dialog_NoActionBar, listener,hour,minute,false);
+
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    arlamsw.setChecked(true);
+                }
+            });
+            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    if(time!= null){
+                        arlamsw.setChecked(true);
+                    }else {
+                        arlamsw.setChecked(false);
+                    }
+                }
+            });
+
+            dialog.setTitle("시간 설정");
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            dialog.setCancelable(false);
+            dialog.show();
+            time.setVisibility(View.VISIBLE);
+        } else {
+//            alarmStop();
+            time.setVisibility(View.GONE);
+        }
     }
 
     private void select(String sql) {
@@ -287,4 +297,5 @@ public class MemodetailActivity extends AppCompatActivity {
         list.add(new MemoArray(c.getString(0), c.getInt(1), c.getString(2), c.getInt(3), c.getInt(4),c.getString(5)));
 
     }
+
 }
