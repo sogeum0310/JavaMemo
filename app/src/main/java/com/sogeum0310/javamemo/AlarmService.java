@@ -17,8 +17,6 @@ import androidx.core.app.NotificationCompat;
 
 public class AlarmService extends Service {
     private static final String TAG = AlarmService.class.getSimpleName();
-    private MediaPlayer mediaPlayer;
-    private boolean isRunning;
 
     @Nullable
     @Override

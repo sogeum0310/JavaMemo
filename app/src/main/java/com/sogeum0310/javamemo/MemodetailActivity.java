@@ -47,8 +47,8 @@ public class MemodetailActivity extends AppCompatActivity {
     ArrayList<MemoArray> list = new ArrayList<>();
     private final DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
     private final DateFormat timeformat = new SimpleDateFormat("yyyy-MM-dd a hh:mm");
-    TimeZone tz = TimeZone.getTimeZone("Asia/Seoul");
-    Calendar c = Calendar.getInstance(tz);
+    //    TimeZone tz = TimeZone.getTimeZone("Asia/Seoul");
+    Calendar c;
 
 
     @Override
@@ -78,7 +78,7 @@ public class MemodetailActivity extends AppCompatActivity {
         helper = new DatabaseHelper(this);
         db = helper.getWritableDatabase();
 
-        String select = "select " + Memolist.content + ", " + Memolist.feel +" , " + Memolist.date + ", " + Memolist.arlam +  ", id, arlamtime from " + Memolist.tablename
+        String select = "select " + Memolist.content + ", " + Memolist.feel + " , " + Memolist.date + ", " + Memolist.arlam + ", id, arlamtime from " + Memolist.tablename
                 + " where id = " + id;
         select(select);
 
@@ -91,11 +91,11 @@ public class MemodetailActivity extends AppCompatActivity {
         date = list.get(0).getDate();
         txdate.setText(date);
         feel = list.get(0).getFeel();
-        if(feel ==1){
+        if (feel == 1) {
             radio.check(R.id.go);
-        }else if (feel ==2){
+        } else if (feel == 2) {
             radio.check(R.id.nogo);
-        }else {
+        } else {
             radio.check(R.id.compl);
         }
         time.setText("");
@@ -103,7 +103,7 @@ public class MemodetailActivity extends AppCompatActivity {
         //알람
         arlam = list.get(0).getArlam();
 
-        if(arlam == 1){
+        if (arlam == 1) {
             arlamsw.setChecked(true);
             time.setText(list.get(0).getArlamtime());
             time.setVisibility(View.VISIBLE);
@@ -168,7 +168,7 @@ public class MemodetailActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
                 int id = radioGroup.getCheckedRadioButtonId();
-                switch (id){
+                switch (id) {
                     case R.id.go:
                         feel = 1;
                         break;
@@ -192,11 +192,11 @@ public class MemodetailActivity extends AppCompatActivity {
                 if (arlamsw.isChecked()) {
                     arlam = 1;
                     update = "UPDATE " + Memolist.tablename + " SET " + Memolist.content + " = '" + content + "', " + Memolist.date + " = '" + date
-                            + "', " + Memolist.feel + " = '" + feel + "', " + Memolist.arlam + " = '" + arlam + "', " + Memolist.arlamtime + " = '" + stime +"' WHERE ID = " + id;
+                            + "', " + Memolist.feel + " = '" + feel + "', " + Memolist.arlam + " = '" + arlam + "', " + Memolist.arlamtime + " = '" + stime + "' WHERE ID = " + id;
                 } else {
                     arlam = 0;
                     update = "UPDATE " + Memolist.tablename + " SET " + Memolist.content + " = '" + content + "', " + Memolist.date + " = '" + date
-                            + "', " + Memolist.feel + " = '" + feel + "', " + Memolist.arlam + " = '" + arlam + "', " + Memolist.arlamtime + " = " + null +" WHERE ID = " + id;
+                            + "', " + Memolist.feel + " = '" + feel + "', " + Memolist.arlam + " = '" + arlam + "', " + Memolist.arlamtime + " = " + null + " WHERE ID = " + id;
                 }
 
                 db.execSQL(update);
@@ -206,13 +206,13 @@ public class MemodetailActivity extends AppCompatActivity {
 
     }
 
-    private void alarmStart(int i, int i1){
+    private void alarmStart(int i, int i1) {
         this.c.set(Calendar.HOUR_OF_DAY, i);
         this.c.set(Calendar.MINUTE, i1);
         this.c.set(Calendar.SECOND, 0);
 
-        if (this.c.before(Calendar.getInstance())){
-            Toast.makeText(this,"알람시간은 현재시간보다 이전일수 없습니다.",Toast.LENGTH_SHORT).show();
+        if (this.c.before(Calendar.getInstance())) {
+            Toast.makeText(this, "알람시간은 현재시간보다 이전일수 없습니다.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -220,7 +220,7 @@ public class MemodetailActivity extends AppCompatActivity {
         stime = timeformat.format(d);
 
         time.setText(stime);
-        Toast.makeText(this,stime+"에 알람이 울립니다.",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, stime + "에 알람이 울립니다.", Toast.LENGTH_SHORT).show();
 
         Intent intent = new Intent(this, AlarmReceiver.class);
 
@@ -233,7 +233,7 @@ public class MemodetailActivity extends AppCompatActivity {
 
     }
 
-    private void listner(){
+    private void listner() {
         int hour = c.get(Calendar.HOUR_OF_DAY);
         int minute = c.get(Calendar.MINUTE);
         Date d;
@@ -249,14 +249,14 @@ public class MemodetailActivity extends AppCompatActivity {
             TimePickerDialog.OnTimeSetListener listener = new TimePickerDialog.OnTimeSetListener() {
                 @Override
                 public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                    if (timePicker.isShown()){
-                        alarmStart(i,i1);
+                    if (timePicker.isShown()) {
+                        alarmStart(i, i1);
                     }
                 }
             };
 
             TimePickerDialog dialog = new TimePickerDialog(MemodetailActivity.this,
-                    android.R.style.Theme_Holo_Light_Dialog_NoActionBar, listener,hour,minute,false);
+                    android.R.style.Theme_Holo_Light_Dialog_NoActionBar, listener, hour, minute, false);
 
             dialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK", new DialogInterface.OnClickListener() {
                 @Override
@@ -267,9 +267,9 @@ public class MemodetailActivity extends AppCompatActivity {
             dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    if(time!= null){
+                    if (time != null) {
                         arlamsw.setChecked(true);
-                    }else {
+                    } else {
                         arlamsw.setChecked(false);
                     }
                 }
@@ -281,7 +281,6 @@ public class MemodetailActivity extends AppCompatActivity {
             dialog.show();
             time.setVisibility(View.VISIBLE);
         } else {
-//            alarmStop();
             time.setVisibility(View.GONE);
         }
     }
@@ -294,7 +293,7 @@ public class MemodetailActivity extends AppCompatActivity {
         db = helper.getWritableDatabase();
         c = db.rawQuery(sql, null);
         c.moveToFirst();
-        list.add(new MemoArray(c.getString(0), c.getInt(1), c.getString(2), c.getInt(3), c.getInt(4),c.getString(5)));
+        list.add(new MemoArray(c.getString(0), c.getInt(1), c.getString(2), c.getInt(3), c.getInt(4), c.getString(5)));
 
     }
 

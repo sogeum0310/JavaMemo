@@ -25,7 +25,6 @@ public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Intent sintent = new Intent(context, AlarmService.class);
-//        sintent.putExtra("id", intent.getStringExtra("id"));
 
         if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.O){
             context.startForegroundService(sintent);
