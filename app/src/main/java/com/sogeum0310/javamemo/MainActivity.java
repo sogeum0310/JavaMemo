@@ -1,7 +1,6 @@
 package com.sogeum0310.javamemo;
 
 import static java.util.Calendar.SUNDAY;
-import static java.util.Calendar.YEAR;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,18 +12,17 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.RelativeSizeSpan;
-import android.text.style.StyleSpan;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.view.animation.Transformation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,7 +45,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.TimeZone;
 
 import com.sogeum0310.javamemo.MemoData.*;
@@ -64,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText added;
     private Button addbt;
     private LinearLayout addll;
+    private FrameLayout mainlay;
     private InputMethodManager inputMethodManager;
     private ArrayList<MemoArray> list = new ArrayList<>();
     private String selday, today;
@@ -73,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Date ddd;
     Collection<CalendarDay> collection = new ArrayList<>();
     private long backBtnTime = 0;
+    GestureDetector gestureDetector;
+    Swipelistener swipelistener;
 
 
     @SuppressLint("ResourceType")
@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         added = findViewById(R.id.added);
         addbt = findViewById(R.id.addbtn);
         addll = findViewById(R.id.addll);
+        mainlay = findViewById(R.id.mainlayout);
         materialCalendarView = findViewById(R.id.calendarView);
 
         fab.setOnClickListener(this);
@@ -119,8 +120,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         materialCalendarView.setOnDateChangedListener(new OnDateSelectedListener() {
             @Override
             public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
-                test.setText(date.getYear() + "-" + (date.getMonth() + 1) + "-" + date.getDay());
-                ddd= date.getDate();
+                test.setText(format.format(date.getDate()));
+                ddd = date.getDate();
                 selday = format.format(ddd);
                 String sql2 = "select " + Memolist.content + ", " + Memolist.feel + ", " + Memolist.arlam + " , " + Memolist.date + ", id from " + Memolist.tablename
                         + " where " + Memolist.date + " = '" + selday + "'";
@@ -173,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     fab.setVisibility(View.GONE);
                     inputMethodManager.showSoftInput(added, 0);
 
-                }else {
+                } else {
                     addll.setVisibility(View.GONE);
                     fab.setVisibility(View.VISIBLE);
                     added.setText("");
@@ -201,13 +202,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String con = added.getText().toString();
                 if (added.length() != 0) {
 
-                    String insert = "INSERT INTO " + Memolist.tablename + " VALUES (" + null + ", " + "'" + con + "'" + " , '" + test.getText().toString() + "', 1, 0, "+ null +" )";
+                    String insert = "INSERT INTO " + Memolist.tablename + " VALUES (" + null + ", " + "'" + con + "'" + " , '" + test.getText().toString() + "', 1, 0, " + null + " )";
                     c = db.rawQuery(insert, null);
                     c.moveToLast();
                     String sql = "select " + Memolist.content + ", " + Memolist.feel + ", " + Memolist.arlam + " , " + Memolist.date + ", id, arlamtime from " + Memolist.tablename;
                     c = db.rawQuery(sql, null);
                     c.moveToLast();
-                    list.add(new MemoArray(c.getString(0), c.getInt(1), c.getString(2), c.getInt(3), c.getInt(4),c.getString(5)));
+                    list.add(new MemoArray(c.getString(0), c.getInt(1), c.getString(2), c.getInt(3), c.getInt(4), c.getString(5)));
 
                     try {
                         ddd = format.parse(selday);
@@ -235,6 +236,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setCalendarDisplayMode(CalendarMode.MONTHS)
                 .commit();
         materialCalendarView.removeDecorators();
+
+        swipelistener = new Swipelistener(mainlay);
+
+//        gestureDetetor = new GestureDetector(this, mGestureDetector);
+
+        View.OnTouchListener gestureListener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent evnent) {
+                return gestureDetector.onTouchEvent(evnent);
+            }
+        };
     }
 
     @Override
@@ -283,6 +295,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+
+    //날짜 데코
     public class EventDeco implements DayViewDecorator {
 
         private int color;
@@ -329,6 +343,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    //db조회
     private void select(String sql) {
         DatabaseHelper helper;
         SQLiteDatabase db;
@@ -349,28 +364,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    //플로팅버튼
     @Override
     public void onClick(View view) {
         int id = view.getId();
         switch (id) {
             case R.id.fabMain:
                 anim();
-//                Toast.makeText(this, "Floating Action Button", Toast.LENGTH_SHORT).show();
                 break;
 //            case R.id.fab1:
 //                anim();
-//                Toast.makeText(this, "Button1", Toast.LENGTH_SHORT).show();
 //                break;
             case R.id.fab2:
-                Intent intent = new Intent(MainActivity.this,SettingActivity.class);
+                Intent intent = new Intent(MainActivity.this, SettingActivity.class);
                 startActivity(intent);
                 anim();
 
-//                Toast.makeText(this, "Button2", Toast.LENGTH_SHORT).show();
                 break;
         }
     }
 
+    //플로팅버튼 애니메이션
     public void anim() {
 
         if (isFabOpen) {
@@ -393,18 +407,77 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         long curTime = System.currentTimeMillis();
         long gapTime = curTime - backBtnTime;
 
-        if(added.requestFocus()){
+        if (added.requestFocus()) {
             added.clearFocus();
-        }else
-        if(0 <= gapTime && 2000 >= gapTime) {
+            addll.setVisibility(View.GONE);
+        } else if (0 <= gapTime && 2000 >= gapTime) {
             super.onBackPressed();
-        }
-        else {
+        } else {
             backBtnTime = curTime;
-            Toast.makeText(this, "한번 더 누르면 종료됩니다.",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "한번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show();
         }
 
 
     }
 
+    private class Swipelistener implements View.OnTouchListener {
+        Swipelistener(View view) {
+            int threshold = 100;
+            int velocity = 100;
+
+            GestureDetector.SimpleOnGestureListener listener =
+                    new GestureDetector.SimpleOnGestureListener() {
+                        @Override
+                        public boolean onDown(MotionEvent e) {
+                            return true;
+                        }
+
+                        @Override
+                        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                            float xDiff = e2.getX() - e1.getX();
+                            float yDiff = e2.getY() - e1.getY();
+
+                            try {
+                                if (Math.abs(xDiff) > Math.abs(yDiff)) {
+                                    if (Math.abs(xDiff) > threshold && Math.abs(velocityY) > velocity) {
+                                        if (xDiff > 0) {
+//                                            Toast.makeText(getApplicationContext(), "Swipe right", Toast.LENGTH_SHORT).show();
+                                        } else {
+//                                            Toast.makeText(getApplicationContext(), "Swipe left", Toast.LENGTH_SHORT).show();
+                                        }
+                                        return true;
+                                    }
+                                } else {
+                                    if (Math.abs(yDiff) > threshold && Math.abs(velocityY) > velocity) {
+                                        if (yDiff > 0) {
+                                            //down
+//                                            Toast.makeText(getApplicationContext(), "Swipe down", Toast.LENGTH_SHORT).show();
+                                            materialCalendarView.state().edit().setCalendarDisplayMode(CalendarMode.MONTHS).commit();
+
+                                        } else {
+                                            //up
+//                                            Toast.makeText(getApplicationContext(), "Swipe up", Toast.LENGTH_SHORT).show();
+                                            materialCalendarView.state().edit().setCalendarDisplayMode(CalendarMode.WEEKS).commit();
+                                        }
+                                        return true;
+
+                                    }
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
+                            return false;
+                        }
+                    };
+            gestureDetector = new GestureDetector(listener);
+            view.setOnTouchListener(this);
+        }
+
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            return gestureDetector.onTouchEvent(motionEvent);
+        }
+    }
 }
